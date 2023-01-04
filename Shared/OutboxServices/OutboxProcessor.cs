@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shared.Contracts;
 
-namespace OutBoxPattern.Services;
+namespace Shared.OutboxServices;
 
 public sealed class OutboxProcessor : BackgroundService
 {
-    IOrderProducer _orderProducer;
-    IOutboxStore<OrderMessage> _outboxStore;
-    private ILogger<OutboxProcessor> _logger;
+    private readonly IOrderProducer _orderProducer;
+    private readonly IOutboxStore<OrderMessage> _outboxStore;
+    private readonly ILogger<OutboxProcessor> _logger;
     private readonly OutboxOptions _options;
     private readonly PeriodicTimer _timer;
 

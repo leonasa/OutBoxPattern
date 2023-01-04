@@ -1,11 +1,14 @@
 using Microsoft.Extensions.Options;
 using Shared.Contracts;
+using Shared.InboxServices;
+
+namespace OrderProcessor;
 
 public class InboxProcessor : BackgroundService
 {
-    private IInboxStore<OrderMessage> _store;
+    private readonly IInboxStore<OrderMessage> _store;
     private readonly ILogger<InboxProcessor> _logger;
-    private IOrderReceivedHandler _orderReceivedHandler;
+    private readonly IOrderReceivedHandler _orderReceivedHandler;
     private readonly PeriodicTimer _timer;
     
     public InboxProcessor(IInboxStore<OrderMessage> store, ILogger<InboxProcessor> logger, IOrderReceivedHandler orderReceivedHandler, IOptions<InboxOptions> options)

@@ -1,3 +1,5 @@
+namespace Shared.InboxServices;
+
 public interface IInboxStore<TMessage>
 {
     Task Store(TMessage message, CancellationToken cancellationToken = default);

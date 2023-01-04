@@ -1,5 +1,6 @@
-using OutBoxPattern.Services;
 using Shared.Contracts;
+
+namespace Shared.InboxServices;
 
 public interface IOrderConsumer
 {

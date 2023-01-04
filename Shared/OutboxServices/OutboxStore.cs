@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace OutBoxPattern.Services;
+namespace Shared.OutboxServices;
 
 
 public interface IOutboxProcessor<TMessage>
@@ -11,9 +11,9 @@ public interface IOutboxProcessor<TMessage>
 
 public sealed class OutboxProcessorGen<TMessage> : IOutboxProcessor<TMessage>
 {
-    IProducer<TMessage> _orderProducer;
-    IOutboxStore<TMessage> _outboxStore;
-    private ILogger<OutboxProcessorGen<TMessage>> _logger;
+    private readonly IProducer<TMessage> _orderProducer;
+    private readonly IOutboxStore<TMessage> _outboxStore;
+    private readonly ILogger<OutboxProcessorGen<TMessage>> _logger;
     private readonly OutboxOptions _options;
     private readonly PeriodicTimer _timer;
 

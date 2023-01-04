@@ -1,4 +1,4 @@
-namespace OutBoxPattern.Services;
+namespace Shared.OutboxServices;
 
 public interface IOutboxStore<TMessage>
 {

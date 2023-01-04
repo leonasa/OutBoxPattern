@@ -1,6 +1,6 @@
 using Shared.Contracts;
 
-namespace OutBoxPattern.Services;
+namespace Shared.OutboxServices;
 
 public interface IProducer<TMessage>
 {

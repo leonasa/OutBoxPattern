@@ -1,13 +1,13 @@
 using Confluent.Kafka;
-using OutBoxPattern.Services;
 using Shared.Contracts;
+using Shared.OutboxServices;
 
 namespace OutBoxPattern;
 
 public class OrderProducer : IOrderProducer
 {
     private readonly IProducer<string?, OrderMessage> _producer;
-    ILogger<OrderProducer> _logger;
+    private readonly ILogger<OrderProducer> _logger;
 
     public OrderProducer(IProducer<string?, OrderMessage> producer, ILogger<OrderProducer> logger)
     {

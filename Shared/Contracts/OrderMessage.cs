@@ -1,5 +1,3 @@
-using OutBoxPattern.Services;
-
 namespace Shared.Contracts;
 
 public class OrderMessage

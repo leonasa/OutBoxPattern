@@ -1,5 +1,8 @@
 using Confluent.Kafka;
 using Shared.Contracts;
+using Shared.InboxServices;
+
+namespace OrderProcessor;
 
 public class KafkaOrderConsumer : IOrderConsumer
 {

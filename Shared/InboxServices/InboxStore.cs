@@ -1,3 +1,5 @@
+namespace Shared.InboxServices;
+
 public class InboxStore<TMessage> : IInboxStore<TMessage>
 {
     private readonly List<TMessage> _messages = new List<TMessage>();

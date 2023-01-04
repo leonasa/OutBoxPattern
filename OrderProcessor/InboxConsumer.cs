@@ -1,4 +1,7 @@
 using Shared.Contracts;
+using Shared.InboxServices;
+
+namespace OrderProcessor;
 
 public class InboxConsumer : BackgroundService
 {
