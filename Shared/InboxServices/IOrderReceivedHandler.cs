@@ -1,6 +1,6 @@
 using Shared.Contracts;
 
-namespace OrderProcessor;
+namespace Shared.InboxServices;
 
 public interface IOrderReceivedHandler
 {

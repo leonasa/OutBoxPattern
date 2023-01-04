@@ -1,32 +1,28 @@
 using Microsoft.AspNetCore.Mvc;
+using Shared.Contracts;
+using Shared.OutboxServices;
 
 namespace OutBoxPattern.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class WeatherForecastController : ControllerBase
+public class OrderController : ControllerBase
 {
-    private static readonly string[] Summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+    private readonly ILogger<OrderController> _logger;
+    private readonly IOutboxStore<OrderMessage> _store;
 
-    private readonly ILogger<WeatherForecastController> _logger;
-
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    public OrderController(ILogger<OrderController> logger)
     {
         _logger = logger;
     }
 
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
+    [HttpPost(Name = "CreateOrder")]
+    public async Task<IActionResult>  Post([FromBody] Order order)
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+        if (ModelState.IsValid)
+        {
+            await _store.Store(new OrderMessage(order));
+        }
+        return BadRequest();
     }
 }

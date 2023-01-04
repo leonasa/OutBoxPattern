@@ -1,7 +1,6 @@
 namespace Shared.Contracts;
 
-public class OrderMessage
+public record OrderMessage(Order PlacedOrder)
 {
     public const string Topic = "order";
-    public Order PlacedOrder { get; set; }
 }
