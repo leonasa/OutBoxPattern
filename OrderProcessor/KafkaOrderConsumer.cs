@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using Shared.Contracts;
 
 public class KafkaOrderConsumer : IOrderConsumer
 {

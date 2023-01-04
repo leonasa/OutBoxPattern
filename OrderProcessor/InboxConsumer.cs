@@ -1,3 +1,5 @@
+using Shared.Contracts;
+
 public class InboxConsumer : BackgroundService
 {
     private readonly IOrderConsumer _consumer;

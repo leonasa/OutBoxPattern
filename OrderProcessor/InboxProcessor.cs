@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Shared.Contracts;
 
 public class InboxProcessor : BackgroundService
 {

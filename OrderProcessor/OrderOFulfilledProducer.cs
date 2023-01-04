@@ -3,26 +3,26 @@ using Shared.Contracts;
 
 namespace OutBoxPattern.Services;
 
-public class OrderOFulfilledProducer :IOrderProducer
+public class OrderOFulfilledProducer : IOrderOFulfilledProducer
 {
-    private readonly IProducer<string?, OrderMessage> _producer;
-    ILogger<OrderProducer> _logger;
+    private readonly IProducer<string?, OrderFulfilledMessage> _producer;
+    ILogger<OrderOFulfilledProducer> _logger;
 
-    public OrderProducer(IProducer<string?, OrderMessage> producer, ILogger<OrderProducer> logger)
+    public OrderOFulfilledProducer(IProducer<string?, OrderFulfilledMessage> producer, ILogger<OrderOFulfilledProducer> logger)
     {
         _producer = producer;
         _logger = logger;
     }
 
-    public async Task Produce(OrderMessage order, CancellationToken cancellationToken = default)
+    public async Task Produce(OrderFulfilledMessage order, CancellationToken cancellationToken = default)
     {
-        var kafkaMessage = new Message<string?, OrderMessage>
+        var kafkaMessage = new Message<string?, OrderFulfilledMessage>
         {
             Key = order.PlacedOrder.CustomerId,
             Value = order
         };
 
-        var deliveryResult = await _producer.ProduceAsync(order.Topic, kafkaMessage, cancellationToken);
+        var deliveryResult = await _producer.ProduceAsync(OrderFulfilledMessage.Topic, kafkaMessage, cancellationToken);
         _logger.LogInformation($"Produced message with id {deliveryResult.Message.Key} to {deliveryResult.TopicPartitionOffset}");
     }
 }

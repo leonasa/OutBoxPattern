@@ -1,7 +1,9 @@
-namespace OutBoxPattern.Services;
+using OutBoxPattern.Services;
+
+namespace Shared.Contracts;
 
 public class OrderMessage
 {
-    public string Topic = "order";
+    public const string Topic = "order";
     public Order PlacedOrder { get; set; }
 }
