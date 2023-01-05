@@ -1,13 +1,13 @@
 using Shared.Contracts;
 using Shared.InboxServices;
+using Shared.OutboxServices;
 
 namespace OrderProcessor;
-
-//NEED PRODUCE TO A TOPIC
 public class OrderReceivedHandler : IOrderReceivedHandler
 {
+    private readonly IOutboxStore<OrderFulfilledMessage> _store;
     public async Task Handle(Order messagePlacedOrder, CancellationToken stoppingToken)
     {
-        throw new NotImplementedException();
+        _store.Store(new OrderFulfilledMessage(messagePlacedOrder, DateTime.Now));
     }
 }

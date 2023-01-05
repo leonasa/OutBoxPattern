@@ -1,6 +1,6 @@
 namespace Shared.Contracts;
 
-public record OrderFulfilledMessage(Order PlacedOrder)
+public record OrderFulfilledMessage(Order PlacedOrder, DateTime FulfilledAt)
 {
-    public const string Topic = "order";
+    public const string Topic = "orderFulfilled";
 };

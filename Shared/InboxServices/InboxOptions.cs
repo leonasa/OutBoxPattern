@@ -1,3 +1,10 @@
 namespace Shared.InboxServices;
 
-public record InboxOptions(string ConfigurationSectionName = "Outbox", bool Enabled = true, int MaxRetries = 3, int RetryDelay = 1000, TimeSpan Interval = default);
+public sealed class InboxOptions
+{
+    public const string ConfigurationSectionName = "Inbox";
+    public bool Enabled { get; set; } = true;
+    public int MaxRetries { get; set; } = 3;
+    public int RetryDelay { get; set; } = 1000;
+    public TimeSpan Interval { get; set; } = TimeSpan.FromSeconds(5);
+};
