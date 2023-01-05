@@ -43,7 +43,7 @@ public sealed class OutboxProcessor : BackgroundService
 
             try
             {
-                _logger.LogInformation("Adding order to store");
+                _logger.LogInformation("Producing order from store");
                 await _orderProducer.Produce(order, stoppingToken);
             }
             catch (Exception e)
