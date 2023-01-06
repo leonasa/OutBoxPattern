@@ -19,7 +19,7 @@ public class InboxStore<TMessage> : IInboxStore<TMessage>
         return  Task.FromResult(_messages.FirstOrDefault());
     }
 
-    public Task MarkAsSent(TMessage message, CancellationToken cancellationToken = default)
+    public Task MarkAsRecived(TMessage message, CancellationToken cancellationToken = default)
     {
         _messages.Remove(message);
         return Task.CompletedTask;

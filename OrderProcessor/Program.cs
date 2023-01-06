@@ -40,6 +40,8 @@ builder.Services.AddSingleton<IConsumer<string?, OrderMessage>>(sp =>
 builder.Services.AddSingleton<IOrderOFulfilledProducer, OrderOFulfilledProducer>();
 builder.Services.AddSingleton<IOutboxStore<OrderFulfilledMessage>, OutboxStore<OrderFulfilledMessage>>();
 builder.Services.AddSingleton<IInboxStore<OrderMessage>, InboxStore<OrderMessage>>();
+builder.Services.AddSingleton<IOrderConsumer, KafkaOrderConsumer>();
+builder.Services.AddHostedService<InboxConsumer>();
 builder.Services.AddHostedService<InboxProcessor>();
 builder.Services.AddHostedService<OutboxFulfilledProcessor>();
 

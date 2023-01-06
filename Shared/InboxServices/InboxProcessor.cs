@@ -25,12 +25,10 @@ public class InboxProcessor : BackgroundService
     {
         while (await _timer.WaitForNextTickAsync(stoppingToken))
         {
-            var messages = await _store.GetUnsentMessages(stoppingToken);
-            foreach (var message in messages)
-            {
-                await _orderReceivedHandler.Handle(message.PlacedOrder, stoppingToken);
-                await _store.MarkAsSent(message, stoppingToken);
-            }
+            var message = await _store.GetNext(stoppingToken);
+            if (message == null) continue;
+            await _orderReceivedHandler.Handle(message.PlacedOrder, stoppingToken);
+            await _store.MarkAsRecived(message, stoppingToken);
         }
     }
 }

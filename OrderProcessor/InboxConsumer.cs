@@ -16,10 +16,13 @@ public class InboxConsumer : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        await Task.Run(async () =>
         {
-            var message = await _consumer.Consume(stoppingToken);
-            await _inboxStore.Store(message, stoppingToken);
-        }
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                var message = await _consumer.Consume(stoppingToken);
+                await _inboxStore.Store(message, stoppingToken);
+            }
+        }, stoppingToken);
     }
 }

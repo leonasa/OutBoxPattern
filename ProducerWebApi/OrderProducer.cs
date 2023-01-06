@@ -15,7 +15,8 @@ public class OrderProducer : IOrderProducer
         _logger = logger;
     }
 
-    public async Task Produce(OrderMessage order, CancellationToken cancellationToken = default)
+    public async Task<DeliveryResult<string?, OrderMessage>> Produce(OrderMessage order,
+        CancellationToken cancellationToken = default)
     {
         var kafkaMessage = new Message<string?, OrderMessage>
         {
@@ -25,5 +26,6 @@ public class OrderProducer : IOrderProducer
 
         var deliveryResult = await _producer.ProduceAsync(OrderMessage.Topic, kafkaMessage, cancellationToken);
         _logger.LogInformation($"Produced message with id {deliveryResult.Message.Key} to {deliveryResult.TopicPartitionOffset}");
+        return deliveryResult;
     }
 }

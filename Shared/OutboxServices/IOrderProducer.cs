@@ -1,3 +1,4 @@
+using Confluent.Kafka;
 using Shared.Contracts;
 
 namespace Shared.OutboxServices;
@@ -9,9 +10,11 @@ public interface IProducer<TMessage>
 
 public interface IOrderProducer
 {
-    Task Produce(OrderMessage order, CancellationToken cancellationToken = default);
+    Task<DeliveryResult<string?, OrderMessage>> Produce(OrderMessage order,
+        CancellationToken cancellationToken = default);
 }
 public interface IOrderOFulfilledProducer
 {
-    Task Produce(OrderFulfilledMessage order, CancellationToken cancellationToken = default);
+    Task<DeliveryResult<string?, OrderFulfilledMessage>> Produce(OrderFulfilledMessage order,
+        CancellationToken cancellationToken = default);
 }

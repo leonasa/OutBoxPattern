@@ -1,3 +1,4 @@
+using Confluent.Kafka;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -44,7 +45,16 @@ public sealed class OutboxProcessor : BackgroundService
             try
             {
                 _logger.LogInformation("Producing order from store");
-                await _orderProducer.Produce(order, stoppingToken);
+                var deliveryResult = await _orderProducer.Produce(order, stoppingToken);
+                if (deliveryResult.Status == PersistenceStatus.Persisted)
+                {
+                    _logger.LogInformation("Order produced successfully");
+                    await _outboxStore.MarkAsSent(order, stoppingToken);
+                }
+                else
+                {
+                    _logger.LogWarning("Order produced with status {Status}", deliveryResult.Status);
+                }
             }
             catch (Exception e)
             {
@@ -93,7 +103,16 @@ public sealed class OutboxFulfilledProcessor : BackgroundService
             try
             {
                 _logger.LogInformation("Producing order from store");
-                await _orderProducer.Produce(order, stoppingToken);
+                var deliveryResult = await _orderProducer.Produce(order, stoppingToken);
+                if (deliveryResult.Status == PersistenceStatus.Persisted)
+                {
+                    _logger.LogInformation("Order Fulfilled produced successfully");
+                    await _outboxStore.MarkAsSent(order, stoppingToken);
+                }
+                else
+                {
+                    _logger.LogWarning("Order Fulfilled produced with status {Status}", deliveryResult.Status);
+                }
             }
             catch (Exception e)
             {
