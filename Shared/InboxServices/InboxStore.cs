@@ -2,7 +2,8 @@ namespace Shared.InboxServices;
 
 public class InboxStore<TMessage> : IInboxStore<TMessage>
 {
-    private readonly List<TMessage> _messages = new List<TMessage>();
+    private readonly List<TMessage> _messages = new();
+
     public Task Store(TMessage message, CancellationToken cancellationToken = default)
     {
         _messages.Add(message);
@@ -11,12 +12,12 @@ public class InboxStore<TMessage> : IInboxStore<TMessage>
 
     public Task<IEnumerable<TMessage>> GetUnsentMessages(CancellationToken cancellationToken = default)
     {
-        return  Task.FromResult(_messages.AsEnumerable());
+        return Task.FromResult(_messages.AsEnumerable());
     }
 
     public Task<TMessage?> GetNext(CancellationToken cancellationToken = default)
     {
-        return  Task.FromResult(_messages.FirstOrDefault());
+        return Task.FromResult(_messages.FirstOrDefault());
     }
 
     public Task MarkAsRecived(TMessage message, CancellationToken cancellationToken = default)

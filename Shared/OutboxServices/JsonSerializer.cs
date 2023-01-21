@@ -10,6 +10,7 @@ public class JsonSerializer<T> : IAsyncSerializer<T> where T : class
         return Task.FromResult(JsonSerializer.SerializeToUtf8Bytes(data));
     }
 }
+
 public class JsonDeserializer<T> : IAsyncDeserializer<T> where T : class
 {
     public Task<T> DeserializeAsync(ReadOnlyMemory<byte> data, bool isNull, SerializationContext context)

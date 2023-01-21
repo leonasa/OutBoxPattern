@@ -1,19 +1,25 @@
+using System.Text.Json;
+using FASTER.core;
 using Shared.Contracts;
 using Shared.InboxServices;
 using Shared.OutboxServices;
 
 namespace OrderProcessor;
+
 public class OrderReceivedHandler : IOrderReceivedHandler
 {
-    private readonly IOutboxStore<OrderFulfilledMessage> _store;
+    
+    private readonly FasterLog _fasterLog;
 
-    public OrderReceivedHandler(IOutboxStore<OrderFulfilledMessage> store)
+    public OrderReceivedHandler(FasterLog fasterLog)
     {
-        _store = store;
+        _fasterLog= fasterLog;
     }
 
-    public async Task Handle(Order messagePlacedOrder, CancellationToken stoppingToken)
+    public async Task Handle(Order messagePlacedOrder, CancellationToken cancellationToken)
     {
-        _store.Store(new OrderFulfilledMessage(messagePlacedOrder, DateTime.Now));
+        var serializedOrderCreated = JsonSerializer.SerializeToUtf8Bytes(new OrderFulfilledMessage(messagePlacedOrder, DateTime.Now));
+        await _fasterLog.EnqueueAsync(serializedOrderCreated, cancellationToken);
+        await _fasterLog.CommitAsync(token: cancellationToken);
     }
 }

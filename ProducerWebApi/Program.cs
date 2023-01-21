@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using FASTER.core;
 using OutBoxPattern;
 using Shared.Contracts;
 using Shared.OutboxServices;
@@ -11,8 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IOrderProducer, OrderProducer>();
-builder.Services.AddSingleton<IOutboxStore<OrderMessage>, OutboxStore<OrderMessage>>();
-builder.Services.AddSingleton<IProducer<string?, OrderMessage>>(sp =>
+builder.Services.AddSingleton<IProducer<string?, OrderMessage>>(_ =>
 {
     var config = new ProducerConfig
     {
@@ -20,6 +20,24 @@ builder.Services.AddSingleton<IProducer<string?, OrderMessage>>(sp =>
     };
     return new ProducerBuilder<string?, OrderMessage>(config)
         .SetValueSerializer(new JsonSerializer<OrderMessage>()).Build();
+});
+
+
+builder.Services.AddSingleton<FasterLog>(_ =>
+{
+    var path = Path.GetTempPath() + "FasterLogPubSub/";
+    var device = Devices.CreateLogDevice(path + "ProducerWebApi.log");
+    var fasterLogSettings = new FasterLogSettings
+    {
+        LogDevice = device, 
+        MemorySizeBits = 11, 
+        PageSizeBits = 9, 
+        MutableFraction = 0.5, 
+        SegmentSizeBits = 9,
+        RemoveOutdatedCommits = true, 
+        AutoRefreshSafeTailAddress = true
+    };
+    return new FasterLog(fasterLogSettings);
 });
 
 

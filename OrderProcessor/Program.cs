@@ -2,6 +2,7 @@
 
 using Confluent.Kafka;
 using Confluent.Kafka.SyncOverAsync;
+using FASTER.core;
 using OrderProcessor;
 using Shared.Contracts;
 using Shared.InboxServices;
@@ -38,12 +39,29 @@ builder.Services.AddSingleton<IConsumer<string?, OrderMessage>>(sp =>
 });
 
 builder.Services.AddSingleton<IOrderOFulfilledProducer, OrderOFulfilledProducer>();
-builder.Services.AddSingleton<IOutboxStore<OrderFulfilledMessage>, OutboxStore<OrderFulfilledMessage>>();
+// builder.Services.AddSingleton<IOutboxStore<OrderFulfilledMessage>, OutboxStore<OrderFulfilledMessage>>();
 builder.Services.AddSingleton<IInboxStore<OrderMessage>, InboxStore<OrderMessage>>();
 builder.Services.AddSingleton<IOrderConsumer, KafkaOrderConsumer>();
 builder.Services.AddHostedService<InboxConsumer>();
 builder.Services.AddHostedService<InboxProcessor>();
 builder.Services.AddHostedService<OutboxFulfilledProcessor>();
+
+builder.Services.AddSingleton<FasterLog>(_ =>
+{
+    var path = Path.GetTempPath() + "FasterLogPubSub/";
+    var device = Devices.CreateLogDevice(path + "OrderProcessor.log");
+    var fasterLogSettings = new FasterLogSettings
+    {
+        LogDevice = device, 
+        MemorySizeBits = 11, 
+        PageSizeBits = 9, 
+        MutableFraction = 0.5, 
+        SegmentSizeBits = 9,
+        RemoveOutdatedCommits = true, 
+        AutoRefreshSafeTailAddress = true
+    };
+    return new FasterLog(fasterLogSettings);
+});
 
 var app = builder.Build();
 

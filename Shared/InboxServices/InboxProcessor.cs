@@ -7,13 +7,14 @@ namespace Shared.InboxServices;
 
 public class InboxProcessor : BackgroundService
 {
-    private readonly IInboxStore<OrderMessage> _store;
     private readonly ILogger<InboxProcessor> _logger;
     private readonly IOrderReceivedHandler _orderReceivedHandler;
+    private readonly IInboxStore<OrderMessage> _store;
     private readonly PeriodicTimer _timer;
-    
-    public InboxProcessor(IInboxStore<OrderMessage> store, ILogger<InboxProcessor> logger, IOrderReceivedHandler orderReceivedHandler, IOptions<InboxOptions> options)
-    
+
+    public InboxProcessor(IInboxStore<OrderMessage> store, ILogger<InboxProcessor> logger,
+        IOrderReceivedHandler orderReceivedHandler, IOptions<InboxOptions> options)
+
     {
         _store = store;
         _logger = logger;

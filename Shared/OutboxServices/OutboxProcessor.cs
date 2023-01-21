@@ -1,4 +1,6 @@
+using System.Text;
 using Confluent.Kafka;
+using FASTER.core;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,117 +10,64 @@ namespace Shared.OutboxServices;
 
 public sealed class OutboxProcessor : BackgroundService
 {
+    private readonly ILogger<OutboxProcessor> _logger;
+    private readonly OutboxOptions _options;
     private readonly IOrderProducer _orderProducer;
-    private readonly IOutboxStore<OrderMessage> _outboxStore;
-    private readonly ILogger<OutboxProcessor> _logger;
-    private readonly OutboxOptions _options;
+    private readonly FasterLog _fasterLog;
     private readonly PeriodicTimer _timer;
 
-    public OutboxProcessor(IOrderProducer orderProducer, IOutboxStore<OrderMessage> outboxStore, ILogger<OutboxProcessor> logger, IOptions<OutboxOptions> options)
+    public OutboxProcessor(IOrderProducer orderProducer,
+        ILogger<OutboxProcessor> logger, IOptions<OutboxOptions> options, FasterLog fasterLog)
     {
         _orderProducer = orderProducer;
-        _outboxStore = outboxStore;
         _logger = logger;
+        _fasterLog = fasterLog;
         _options = options.Value;
         _timer = new PeriodicTimer(_options.Interval);
+    }
+
+    async Task ConsumerAsync(CancellationToken cancellationToken)
+    {
+        using var iter = _fasterLog.Scan(_fasterLog.BeginAddress, long.MaxValue, "consumerLogIter", true, ScanBufferingMode.DoublePageBuffering, true);
+
+        try
+        {
+            int count = 0;
+            await foreach (var (result, length, currentAddress, nextAddress) in iter.GetAsyncEnumerable(cancellationToken))
+            {
+                Console.WriteLine($"Same Log Consuming {Encoding.UTF8.GetString(result)}");
+                var order = System.Text.Json.JsonSerializer.Deserialize<OrderMessage>(Encoding.UTF8.GetString(result));
+                try
+                {
+                    _logger.LogInformation("Producing order from store");
+                    var deliveryResult = await _orderProducer.Produce(order, cancellationToken);
+                    if (deliveryResult.Status == PersistenceStatus.Persisted)
+                    {
+                        _logger.LogInformation("Order produced successfully");
+                        iter.CompleteUntil(nextAddress);
+                        _fasterLog.TruncateUntil(nextAddress);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Order produced with status {Status}", deliveryResult.Status);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
+        }
+        catch (OperationCanceledException) { }
+        Console.WriteLine("Consumer complete");
     }
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // return Task.Run(async () =>
-        // {
-        //     while (!stoppingToken.IsCancellationRequested)
-        //     {
-        //         await _timer.WaitForNextTick(stoppingToken);
-        //         await Process(stoppingToken);
-        //     }
-        // }, stoppingToken);
-
-        while (await _timer.WaitForNextTickAsync(stoppingToken))
+        await Task.Run(async () =>
         {
-            OrderMessage? order = await _outboxStore.GetNext(stoppingToken);
-            if (order is null)
-            {
-                continue;
-            }
-
-            try
-            {
-                _logger.LogInformation("Producing order from store");
-                var deliveryResult = await _orderProducer.Produce(order, stoppingToken);
-                if (deliveryResult.Status == PersistenceStatus.Persisted)
-                {
-                    _logger.LogInformation("Order produced successfully");
-                    await _outboxStore.MarkAsSent(order, stoppingToken);
-                }
-                else
-                {
-                    _logger.LogWarning("Order produced with status {Status}", deliveryResult.Status);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
-    }
-}
-public sealed class OutboxFulfilledProcessor : BackgroundService
-{
-    private readonly IOrderOFulfilledProducer _orderProducer;
-    private readonly IOutboxStore<OrderFulfilledMessage> _outboxStore;
-    private readonly ILogger<OutboxProcessor> _logger;
-    private readonly OutboxOptions _options;
-    private readonly PeriodicTimer _timer;
-
-    public OutboxFulfilledProcessor(IOrderOFulfilledProducer orderProducer, IOutboxStore<OrderFulfilledMessage> outboxStore, ILogger<OutboxProcessor> logger, IOptions<OutboxOptions> options)
-    {
-        _orderProducer = orderProducer;
-        _outboxStore = outboxStore;
-        _logger = logger;
-        _options = options.Value;
-        _timer = new PeriodicTimer(_options.Interval);
-    }
-    
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        // return Task.Run(async () =>
-        // {
-        //     while (!stoppingToken.IsCancellationRequested)
-        //     {
-        //         await _timer.WaitForNextTick(stoppingToken);
-        //         await Process(stoppingToken);
-        //     }
-        // }, stoppingToken);
-
-        while (await _timer.WaitForNextTickAsync(stoppingToken))
-        {
-            OrderFulfilledMessage? order = await _outboxStore.GetNext(stoppingToken);
-            if (order is null)
-            {
-                continue;
-            }
-
-            try
-            {
-                _logger.LogInformation("Producing order from store");
-                var deliveryResult = await _orderProducer.Produce(order, stoppingToken);
-                if (deliveryResult.Status == PersistenceStatus.Persisted)
-                {
-                    _logger.LogInformation("Order Fulfilled produced successfully");
-                    await _outboxStore.MarkAsSent(order, stoppingToken);
-                }
-                else
-                {
-                    _logger.LogWarning("Order Fulfilled produced with status {Status}", deliveryResult.Status);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
+            await ConsumerAsync(stoppingToken);
+        }, stoppingToken);
     }
 }
